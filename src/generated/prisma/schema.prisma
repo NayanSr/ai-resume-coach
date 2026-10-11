@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Prisma 7+: url এখানে নয় — prisma.config.ts এ যায়
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resumes      Resume[]
+  chatSessions ChatSession[]
+}
+
+model Resume {
+  id           String       @id @default(cuid())
+  userId       String
+  title        String       @default("Untitled Resume")
+  fileName     String?
+  fileUrl      String?
+  rawText      String?      @db.Text
+  analysisJson Json?
+  score        Int?
+  status       ResumeStatus @default(UPLOADED)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatSessions ChatSession[]
+
+  @@index([userId])
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  resumeId  String?
+  title     String   @default("New chat")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume   Resume?   @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  messages Message[]
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model Message {
+  id            String      @id @default(cuid())
+  chatSessionId String
+  role          MessageRole
+  content       String      @db.Text
+  createdAt     DateTime    @default(now())
+
+  chatSession ChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+
+  @@index([chatSessionId])
+}
+
+enum ResumeStatus {
+  UPLOADED
+  ANALYZED
+  REWRITTEN
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
