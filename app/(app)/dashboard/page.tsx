@@ -1,5 +1,4 @@
-// import { requireDbUser } from "@/lib/auth";
-// import { prisma } from "@/lib/db";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -8,17 +7,17 @@ import { requireDbUser } from "@/src/lib/auth";
 
 export default async function DashboardPage() {
   const user = await requireDbUser();
+  console.log("user from dashboard page", user)
 
-  const [resumeCount, sessionCount] = await Promise.all([
+  const [resumeCount, sessionCount, recentResumes] = await Promise.all([
     prisma.resume.count({ where: { userId: user.id } }),
     prisma.chatSession.count({ where: { userId: user.id } }),
+    prisma.resume.findMany({
+      where: { userId: user.id },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+    }),
   ]);
-
-  const recentResumes = await prisma.resume.findMany({
-    where: { userId: user.id },
-    orderBy: { updatedAt: "desc" },
-    take: 5,
-  });
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-10">
@@ -31,8 +30,8 @@ export default async function DashboardPage() {
             Resume history ও coaching session এখানে দেখা যাবে।
           </p>
         </div>
-        <Button render={<Link href="/dashboard"/>} nativeButton={false}>
-          Upload resume (Day 3)
+        <Button render={<Link href="/dashboard/upload"/>} nativeButton={false}>
+          Upload resume
         </Button>
       </div>
 
@@ -70,13 +69,25 @@ export default async function DashboardPage() {
         <CardContent>
           {recentResumes.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              এখনো কোনো resume নেই। Day 3-এ upload ফিচার আসবে।
+              এখনো কোনো resume নেই।{" "}
+              <Link href="/dashboard/upload" className="text-primary underline">
+                Upload করো
+              </Link>
+              ।
             </p>
           ) : (
             <ul className="space-y-2 text-sm">
               {recentResumes.map((r) => (
-                <li key={r.id} className="flex justify-between border-b py-2 last:border-0">
-                  <span>{r.title}</span>
+                <li
+                  key={r.id}
+                  className="flex items-center justify-between border-b py-2 last:border-0"
+                >
+                  <Link
+                    href={`/dashboard/resumes/${r.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {r.title}
+                  </Link>
                   <span className="text-muted-foreground">{r.status}</span>
                 </li>
               ))}
