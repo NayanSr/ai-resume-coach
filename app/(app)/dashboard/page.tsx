@@ -30,7 +30,7 @@ export default async function DashboardPage() {
             Resume history ও coaching session এখানে দেখা যাবে।
           </p>
         </div>
-        <Button render={<Link href="/dashboard/upload"/>} nativeButton={false}>
+        <Button render={<Link href="/dashboard/upload" />} nativeButton={false}>
           Upload resume
         </Button>
       </div>
@@ -88,7 +88,10 @@ export default async function DashboardPage() {
                   >
                     {r.title}
                   </Link>
-                  <span className="text-muted-foreground">{r.status}</span>
+                  <span className="text-muted-foreground">
+                    {r.status}
+                    {typeof r.score === "number" ? ` · ${r.score}` : ""}
+                  </span>
                 </li>
               ))}
             </ul>
