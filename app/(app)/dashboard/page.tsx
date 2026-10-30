@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { prisma } from "@/src/lib/db";
 import { requireDbUser } from "@/src/lib/auth";
+import { EmptyState } from "@/components/shared/empty-state";
 
 export default async function DashboardPage() {
   const user = await requireDbUser();
@@ -62,7 +63,8 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <Card>
+
+      {/* <Card>
         <CardHeader>
           <CardTitle>Recent resumes</CardTitle>
         </CardHeader>
@@ -97,7 +99,49 @@ export default async function DashboardPage() {
             </ul>
           )}
         </CardContent>
+      </Card> */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent resumes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {recentResumes.length === 0 ? (
+            <>
+              <EmptyState
+                title="No resumes yet"
+                description="Upload a PDF or DOCX to start analysis, chat, and rewrites."
+              />
+              <div className="mt-4 flex justify-center">
+                <Button render={<Link href="/dashboard/upload" />} nativeButton={false}>
+                  Upload resume
+                </Button>
+              </div>
+            </>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {recentResumes.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-center justify-between border-b py-2 last:border-0"
+                >
+                  <Link
+                    href={`/dashboard/resumes/${r.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {r.title}
+                  </Link>
+                  <span className="text-muted-foreground">
+                    {r.status}
+                    {typeof r.score === "number" ? ` · ${r.score}` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
       </Card>
+
+
     </div>
   );
 }

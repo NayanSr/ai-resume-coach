@@ -46,13 +46,16 @@ export function Navbar() {
             </SignUpButton>
           </Show>
 
-           
+
 
           <Show when="signed-in">
-            <Button  variant="ghost" className="hidden sm:inline-flex" nativeButton={false}
-            render={<Link href="/dashboard" />}>
+            <Button variant="ghost" className="hidden sm:inline-flex" nativeButton={false}
+              render={<Link href="/dashboard" />}>
               Dashboard
             </Button>
+            <Link href="/dashboard/portfolio" className="hover:text-foreground">
+              Portfolio
+            </Link>
             <UserButton />
           </Show>
         </div>
