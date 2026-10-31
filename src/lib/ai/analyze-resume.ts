@@ -1,4 +1,42 @@
+// day 7
+import { generateText, Output } from "ai";
+import { getChatModel } from "@/src/lib/ai/model";
+import {
+  resumeAnalysisSchema,
+  type ResumeAnalysis,
+} from "@/src/lib/ai/resume-analysis-schema";
 
+const SYSTEM = `You are an expert technical recruiter and resume coach.
+Analyze the resume text carefully.
+Be specific, honest, and actionable.
+Prefer measurable feedback over vague praise.
+Do not invent employers, degrees, or skills that are not in the text.
+Scores should reflect real quality for competitive software / tech roles.`;
+
+export async function analyzeResumeText(
+  rawText: string
+): Promise<ResumeAnalysis> {
+  const clipped = rawText.slice(0, 14_000);
+
+  const { output } = await generateText({
+    model: getChatModel(),
+    system: SYSTEM,
+    output: Output.object({ schema: resumeAnalysisSchema }),
+    prompt: `Analyze this resume and return structured feedback.
+
+---
+RESUME TEXT:
+${clipped}
+---`,
+    maxRetries: 2,
+  });
+
+  if (!output) throw new Error("AI returned empty analysis");
+  return output;
+}
+
+/* 
+// till day 6
 import { generateText, Output } from "ai";
 import { google } from "@ai-sdk/google";
 
@@ -41,6 +79,7 @@ ${clipped}
 
   return output;
 }
+   */
 
 
 
